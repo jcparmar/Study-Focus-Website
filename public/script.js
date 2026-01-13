@@ -10,9 +10,11 @@ const pairingSection = document.getElementById('pairing-section');
 const focusModeSection = document.getElementById('focus-mode');
 const statusDisplay = document.getElementById('status-display');
 const endSessionBtn = document.getElementById('end-session-btn');
+const soloModeBtn = document.getElementById('solo-mode-btn');
 
 let currentRoomId = null;
 let isFocusModeActive = false;
+let isSoloMode = false;
 let audio = new Audio('./assets/boom.mp3'); // Default sound
 audio.loop = true;
 
