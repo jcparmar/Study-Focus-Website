@@ -16,6 +16,8 @@ let currentRoomId = null;
 let isFocusModeActive = false;
 let isCreator = false;
 let isSoloMode = false;
+let timerInterval;
+let seconds = 0;
 
 let audio = new Audio('./assets/boom.mp3'); // Default sound
 audio.loop = true;
@@ -24,11 +26,30 @@ let bgMusic = new Audio('./assets/theme.webm');
 bgMusic.loop = true;
 bgMusic.volume = 0.2; // Low volume background music
 
+function startTimer() {
+    seconds = 0;
+    const timerElement = document.getElementById('timer');
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        seconds++;
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        timerElement.textContent =
+            `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+}
+
 // Helper: Show/Hide sections
 function showFocusMode() {
     pairingSection.style.display = 'none';
     focusModeSection.style.display = 'block';
     isFocusModeActive = true;
+    startTimer();
     updateStatus('Session Active. Stay focused!');
 }
 
@@ -87,6 +108,7 @@ socket.on('peer_disconnected', () => {
     isFocusModeActive = false;
     audio.pause();
     bgMusic.pause();
+    stopTimer();
     document.body.style.backgroundColor = '#f8fafc';
     alert('Peer disconnected');
     location.reload();
