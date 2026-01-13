@@ -34,12 +34,29 @@ let bgMusic = new Audio('./assets/theme.webm');
 bgMusic.loop = true;
 bgMusic.volume = 0.2; // Low volume background music
 
+// Need to track time since last break for unlocking
+let timeSinceStart = 0; // or time since last break
+
 function startTimer() {
     seconds = 0;
+    timeSinceStart = 0;
     const timerElement = document.getElementById('timer');
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        seconds++;
+        if (!isBreakActive) {
+            seconds++;
+            timeSinceStart++;
+
+            // Check for break unlock
+            // Unlock if timeSinceStart >= UNLOCK_BREAK_TIME (1800s)
+            if (timeSinceStart >= UNLOCK_BREAK_TIME && breakBtn.disabled) {
+                breakBtn.disabled = false;
+                breakBtn.style.backgroundColor = '#f59e0b'; // Amber color
+                breakBtn.style.cursor = 'pointer';
+                breakBtn.textContent = "Take a 10m Break";
+            }
+        }
+
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
         const secs = seconds % 60;
