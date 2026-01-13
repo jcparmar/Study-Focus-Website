@@ -11,6 +11,7 @@ const focusModeSection = document.getElementById('focus-mode');
 const statusDisplay = document.getElementById('status-display');
 const endSessionBtn = document.getElementById('end-session-btn');
 const soloModeBtn = document.getElementById('solo-mode-btn');
+const volumeSlider = document.getElementById('bg-volume');
 
 let currentRoomId = null;
 let isFocusModeActive = false;
@@ -144,6 +145,10 @@ soloModeBtn.addEventListener('click', () => {
     showFocusMode();
     bgMusic.play().catch(e => console.log('Bg music play failed', e));
     updateStatus('Solo Session Active. Stay focused!');
+});
+
+volumeSlider.addEventListener('input', (e) => {
+    bgMusic.volume = e.target.value;
 });
 
 // Page Visibility API
