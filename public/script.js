@@ -12,13 +12,20 @@ const statusDisplay = document.getElementById('status-display');
 const endSessionBtn = document.getElementById('end-session-btn');
 const soloModeBtn = document.getElementById('solo-mode-btn');
 const volumeSlider = document.getElementById('bg-volume');
+const breakBtn = document.getElementById('break-btn');
 
 let currentRoomId = null;
 let isFocusModeActive = false;
 let isCreator = false;
 let isSoloMode = false;
+let isBreakActive = false;
 let timerInterval;
 let seconds = 0;
+
+// Constants (in seconds)
+const UNLOCK_BREAK_TIME = 30 * 60; // 30 minutes
+// const UNLOCK_BREAK_TIME = 10; // Debug: 10 seconds
+const BREAK_DURATION = 10 * 60; // 10 minutes
 
 let audio = new Audio('./assets/boom.mp3'); // Default sound
 audio.loop = true;
@@ -151,9 +158,50 @@ volumeSlider.addEventListener('input', (e) => {
     bgMusic.volume = e.target.value;
 });
 
+breakBtn.addEventListener('click', () => {
+    isBreakActive = true;
+    breakBtn.disabled = true;
+    breakBtn.style.backgroundColor = '#94a3b8';
+    breakBtn.style.cursor = 'not-allowed';
+    breakBtn.textContent = "Break Timer: 10:00";
+
+    updateStatus('Break Time! Relax.', false);
+    document.body.style.backgroundColor = '#e0f2fe'; // Light blue for break
+
+    // Pause Alarm/Check Logic handled in visibilitychange
+
+    let breakSeconds = BREAK_DURATION;
+    const breakInterval = setInterval(() => {
+        breakSeconds--;
+        const bMins = Math.floor(breakSeconds / 60);
+        const bSecs = breakSeconds % 60;
+        breakBtn.textContent = `Break Timer: ${bMins}:${bSecs.toString().padStart(2, '0')}`;
+
+        if (breakSeconds <= 0) {
+            clearInterval(breakInterval);
+            endBreak();
+        }
+    }, 1000);
+
+    // Allow user to end break early? Maybe clicking button again? For now, automatic end.
+    // Store interval to clear if session ends
+    breakBtn.dataset.intervalId = breakInterval;
+});
+
+function endBreak() {
+    isBreakActive = false;
+    document.body.style.backgroundColor = '#f8fafc';
+    updateStatus('Break Over. Back to Focus!', false);
+    breakBtn.textContent = "Take Break (Locked)";
+    clearInterval(parseInt(breakBtn.dataset.intervalId));
+    // Reset unlock timer? Yes, usually resets cycle.
+    timeSinceStart = 0;
+}
+
 // Page Visibility API
 document.addEventListener('visibilitychange', () => {
     if (!isFocusModeActive) return;
+    if (isBreakActive) return; // IGNORE focus loss during break
 
     const isFocused = !document.hidden;
 
