@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Focus</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <h1>Study Focus</h1>
+        </header>
+        <main>
+            <div id="status-container">
+                <p id="status-message">Waiting for connection...</p>
+                <div id="device-id-display"></div>
+            </div>
+            <div id="pairing-section">
+                <button id="create-room-btn">Create Room</button>
+                <div id="or-divider">OR</div>
+                <input type="text" id="pairing-code" placeholder="Enter pairing code">
+                <button id="join-room-btn">Join Room</button>
+            </div>
+            <div id="focus-mode" style="display: none;">
+                <h2>Focus Mode Active</h2>
+                <div id="status-display"></div>
+                <button id="end-session-btn">End Session</button>
+            </div>
+        </main>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
