@@ -14,15 +14,15 @@ const soloModeBtn = document.getElementById('solo-mode-btn');
 
 let currentRoomId = null;
 let isFocusModeActive = false;
+let isCreator = false;
 let isSoloMode = false;
+
 let audio = new Audio('./assets/boom.mp3'); // Default sound
 audio.loop = true;
 
 let bgMusic = new Audio('./assets/theme.webm');
 bgMusic.loop = true;
 bgMusic.volume = 0.2; // Low volume background music
-
-let isCreator = false;
 
 // Helper: Show/Hide sections
 function showFocusMode() {
@@ -43,7 +43,6 @@ socket.on('connect', () => {
     console.log('Connected to server');
     statusMessage.textContent = 'Connected. Create or Join a room.';
 });
-
 
 socket.on('room_created', (roomId) => {
     currentRoomId = roomId;
@@ -118,11 +117,39 @@ endSessionBtn.addEventListener('click', () => {
     }
 });
 
+soloModeBtn.addEventListener('click', () => {
+    isSoloMode = true;
+    showFocusMode();
+    bgMusic.play().catch(e => console.log('Bg music play failed', e));
+    updateStatus('Solo Session Active. Stay focused!');
+});
+
 // Page Visibility API
 document.addEventListener('visibilitychange', () => {
-    if (!isFocusModeActive || !currentRoomId) return;
+    if (!isFocusModeActive) return;
 
     const isFocused = !document.hidden;
+
+    // Solo Mode Logic
+    if (isSoloMode) {
+        if (!isFocused) {
+            statusDisplay.textContent = "You lost focus!";
+            audio.play().catch(e => console.log('Audio play failed', e));
+            document.body.style.backgroundColor = '#fee2e2'; // Light red
+        } else {
+            statusDisplay.textContent = "Welcome back.";
+            audio.pause();
+            audio.currentTime = 0;
+            document.body.style.backgroundColor = '#f8fafc'; // Reset
+            // Ensure bg music keeps playing
+            bgMusic.play().catch(e => console.log('Bg music play failed', e));
+        }
+        return;
+    }
+
+    // Pair Mode Logic
+    if (!currentRoomId) return;
+
     socket.emit('focus_status', {
         roomId: currentRoomId,
         focused: isFocused
@@ -130,7 +157,7 @@ document.addEventListener('visibilitychange', () => {
 
     if (!isFocused) {
         statusDisplay.textContent = "You lost focus!";
-        // Optional: Play local sound too?
+        // In pair mode, we don't play local sound for self, only for peer
     } else {
         statusDisplay.textContent = "Welcome back.";
     }
