@@ -13,6 +13,7 @@ const endSessionBtn = document.getElementById('end-session-btn');
 const soloModeBtn = document.getElementById('solo-mode-btn');
 const volumeSlider = document.getElementById('bg-volume');
 const breakBtn = document.getElementById('break-btn');
+const themeToggleBtn = document.getElementById('theme-toggle');
 
 let currentRoomId = null;
 let isFocusModeActive = false;
@@ -115,7 +116,7 @@ socket.on('peer_focus_status', (isFocused) => {
         // Optional: Pause bg music while alarm plays? Or keep it?
         // User said "it should just be there", so we leave it running.
         audio.play().catch(e => console.log('Audio play failed', e));
-        document.body.style.backgroundColor = '#fee2e2'; // Light red
+        document.body.classList.add('state-focus-lost');
     } else {
         updateStatus('Peer is focused.', false);
         audio.pause();
@@ -124,7 +125,7 @@ socket.on('peer_focus_status', (isFocused) => {
         if (isCreator) {
             bgMusic.play().catch(e => console.log('Bg music play failed', e));
         }
-        document.body.style.backgroundColor = '#f8fafc'; // Reset
+        document.body.classList.remove('state-focus-lost');
     }
 });
 
@@ -134,7 +135,8 @@ socket.on('peer_disconnected', () => {
     audio.pause();
     bgMusic.pause();
     stopTimer();
-    document.body.style.backgroundColor = '#f8fafc';
+    stopTimer();
+    document.body.classList.remove('state-focus-lost', 'state-break');
     alert('Peer disconnected');
     location.reload();
 });
@@ -175,6 +177,12 @@ volumeSlider.addEventListener('input', (e) => {
     bgMusic.volume = e.target.value;
 });
 
+themeToggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    themeToggleBtn.textContent = isDark ? '🌙' : '☀️';
+});
+
 breakBtn.addEventListener('click', () => {
     isBreakActive = true;
     breakBtn.disabled = true;
@@ -183,7 +191,7 @@ breakBtn.addEventListener('click', () => {
     breakBtn.textContent = "Break Timer: 10:00";
 
     updateStatus('Break Time! Relax.', false);
-    document.body.style.backgroundColor = '#e0f2fe'; // Light blue for break
+    document.body.classList.add('state-break');
 
     // Pause Alarm/Check Logic handled in visibilitychange
 
@@ -207,7 +215,7 @@ breakBtn.addEventListener('click', () => {
 
 function endBreak() {
     isBreakActive = false;
-    document.body.style.backgroundColor = '#f8fafc';
+    document.body.classList.remove('state-break');
     updateStatus('Break Over. Back to Focus!', false);
     breakBtn.textContent = "Take Break (Locked)";
     clearInterval(parseInt(breakBtn.dataset.intervalId));
@@ -227,12 +235,12 @@ document.addEventListener('visibilitychange', () => {
         if (!isFocused) {
             statusDisplay.textContent = "You lost focus!";
             audio.play().catch(e => console.log('Audio play failed', e));
-            document.body.style.backgroundColor = '#fee2e2'; // Light red
+            document.body.classList.add('state-focus-lost');
         } else {
             statusDisplay.textContent = "Welcome back.";
             audio.pause();
             audio.currentTime = 0;
-            document.body.style.backgroundColor = '#f8fafc'; // Reset
+            document.body.classList.remove('state-focus-lost');
             // Ensure bg music keeps playing
             bgMusic.play().catch(e => console.log('Bg music play failed', e));
         }
